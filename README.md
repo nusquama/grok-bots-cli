@@ -63,17 +63,18 @@ grok-bots-cli --version
 
 ### Update
 
-Run the install command again with `--force`. This always fetches the latest version from GitHub:
-
 ```bash
-uv tool install --force git+https://github.com/nusquama/grok-bots-cli
+uv tool upgrade grok-bots-cli
 ```
 
 ```bash
-pipx install --force git+https://github.com/nusquama/grok-bots-cli
+pipx upgrade grok-bots-cli
 ```
 
-To install a specific release instead, add its tag to the URL, for example `...grok-bots-cli@v0.1.1`.
+Both fetch the latest version from GitHub. If an update ever fails, reinstall with
+`uv tool install --force git+https://github.com/nusquama/grok-bots-cli` (or the same with `pipx install --force`).
+
+An install pinned to a tag stays on that tag. To install a specific release, add its tag to the URL, for example `...grok-bots-cli@v0.1.1`.
 See [Releases](https://github.com/nusquama/grok-bots-cli/releases) for the list.
 
 ### Remove
