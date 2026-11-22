@@ -1,0 +1,17 @@
+{
+  "name": "grok-bots-cli",
+  "description": "Unofficial skill to read public Grok Bot Marketplace recipes with the grok-bots-cli command. Not affiliated with xAI.",
+  "owner": { "name": "nusquama" },
+  "plugins": [
+    {
+      "name": "grok-bots-cli",
+      "description": "List public Grok Bot Marketplace bots and read their full skills, routines, and memories from the terminal.",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/grok-bots-cli"],
+      "category": "development",
+      "homepage": "https://github.com/nusquama/grok-bots-cli",
+      "license": "MIT"
+    }
+  ]
+}

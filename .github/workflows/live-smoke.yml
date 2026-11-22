@@ -1,0 +1,28 @@
+name: live-smoke
+
+# Weekly check that the public Marketplace still works the way the CLI expects.
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: astral-sh/setup-uv@v10.4.0
+      - name: Install from the default branch
+        run: uv tool install --python 3.12 "git+https://github.com/${{ github.repository }}"
+      - name: Read the live Marketplace
+        run: |
+          export PATH="$(uv tool dir --bin):$PATH"
+          count=$(grok-bots-cli list | wc -l)
+          echo "Bots listed: $count"
+          test "$count" -gt 0
+          slug=$(grok-bots-cli list | head -n 1)
+          grok-bots-cli show "$slug" > summary.json
+          python3 -c "import json; d = json.load(open('summary.json')); assert d['slug'], d"
+          grok-bots-cli show "$slug" --full | head -n 5

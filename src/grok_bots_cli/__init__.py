@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Read public Grok Bot Marketplace listings and recipes.
 
 Unofficial tool. Not affiliated with, endorsed by, or sponsored by SpaceXSI or xAI.
@@ -14,6 +13,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
+
+__version__ = "0.1.0"
 
 MARKETPLACE = "https://x.ai/bot/marketplace"
 LISTING_API = "https://api2.cursor.sh/aiserver.v1.GrokBotService/GetPublicGrokBotMarketplaceListing"
@@ -56,7 +57,7 @@ class MarketplaceRedirect(HTTPRedirectHandler):
 def fetch(url, hosts, label, payload=None):
     if not is_https_host(url, hosts):
         raise MarketplaceError(f"{label} returned an unexpected URL.")
-    headers = {"User-Agent": "grok-bots-cli/1.0 (+https://github.com/nusquama/grok-bots-cli)"}
+    headers = {"User-Agent": f"grok-bots-cli/{__version__} (+https://github.com/nusquama/grok-bots-cli)"}
     if payload is not None:
         headers.update({"Content-Type": "application/json", "Connect-Protocol-Version": "1"})
         payload = json.dumps(payload).encode()
@@ -161,10 +162,11 @@ def full_recipe_markdown(slug, recipe):
     return "\n".join(lines)
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="grok-bots-cli", description="Read public Grok Bot Marketplace listings and recipes."
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("list", help="List bot slugs found on the Marketplace home page.")
     show = commands.add_parser("show", help="Read one public recipe by slug or listing URL.")
@@ -172,7 +174,7 @@ def main():
     output = show.add_mutually_exclusive_group()
     output.add_argument("--section", choices=SECTIONS, help="Show the requested recipe section.")
     output.add_argument("--full", action="store_true", help="Print all skill, routine and memory texts as Markdown.")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         if args.command == "list":
             print("\n".join(list_bots()))

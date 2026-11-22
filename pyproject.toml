@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "grok-bots-cli"
+version = "0.1.0"
+description = "Unofficial CLI to read public Grok Bot Marketplace recipes (skills, routines, memories). Not affiliated with xAI."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "nusquama" }]
+keywords = ["grok", "grok-bot", "agent-skills", "cli"]
+classifiers = [
+  "Environment :: Console",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/nusquama/grok-bots-cli"
+Issues = "https://github.com/nusquama/grok-bots-cli/issues"
+Changelog = "https://github.com/nusquama/grok-bots-cli/blob/main/CHANGELOG.md"
+
+[project.scripts]
+grok-bots-cli = "grok_bots_cli:main"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "tests/", "README.md", "LICENSE", "CHANGELOG.md"]

@@ -1,12 +1,19 @@
 <p align="center">
-  <img src="assets/icon.png" alt="grok-bots-cli icon" width="120">
+  <img src="https://raw.githubusercontent.com/nusquama/grok-bots-cli/main/assets/icon.png" alt="grok-bots-cli icon" width="120">
 </p>
 
 <h1 align="center">grok-bots-cli</h1>
 
 <p align="center">
-  Read public Grok Bot Marketplace recipes from your terminal.<br>
-  No account. No API key. One Python file.
+  Read public Grok Bot Marketplace recipes from your terminal or your AI agent.<br>
+  No account. No API key. No dependencies.
+</p>
+
+<p align="center">
+  <a href="https://github.com/nusquama/grok-bots-cli/actions/workflows/ci.yml"><img src="https://github.com/nusquama/grok-bots-cli/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/nusquama/grok-bots-cli/actions/workflows/live-smoke.yml"><img src="https://github.com/nusquama/grok-bots-cli/actions/workflows/live-smoke.yml/badge.svg" alt="Live Marketplace check"></a>
+  <img src="https://img.shields.io/badge/python-3.9%2B-blue" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
 </p>
 
 > **Unofficial project.** grok-bots-cli is not affiliated with, endorsed by, or sponsored by SpaceXSI (xAI) or X.
@@ -30,14 +37,27 @@ and compare bots before you import one.
 
 ## Install
 
-Requirements: Python 3.9 or newer. No other dependency.
+You need Python 3.9 or newer. Pick one:
 
 ```bash
-curl -fsSLo ~/.local/bin/grok-bots-cli https://raw.githubusercontent.com/nusquama/grok-bots-cli/main/grok-bots-cli
-chmod +x ~/.local/bin/grok-bots-cli
+uv tool install git+https://github.com/nusquama/grok-bots-cli
 ```
 
-Make sure `~/.local/bin` is on your `PATH`. You can also clone the repository and run `./grok-bots-cli`.
+```bash
+pipx install git+https://github.com/nusquama/grok-bots-cli
+```
+
+Both create an isolated environment and put `grok-bots-cli` on your `PATH`.
+To pin a release, add `@v0.1.0` to the URL.
+
+Check the install:
+
+```bash
+grok-bots-cli --version
+```
+
+**Update:** `uv tool upgrade grok-bots-cli` or `pipx upgrade grok-bots-cli`.
+**Remove:** `uv tool uninstall grok-bots-cli` or `pipx uninstall grok-bots-cli`.
 
 ## Usage
 
@@ -49,7 +69,7 @@ grok-bots-cli list
 grok-bots-cli show dr-eggbot-v2
 grok-bots-cli show https://x.ai/bot/marketplace/bots/dr-eggbot-v2
 
-# Print every skill, routine, and memory text as one Markdown document
+# Save every skill, routine, and memory text as one Markdown document
 grok-bots-cli show dr-eggbot-v2 --full > dr-eggbot.md
 
 # Print one raw section as JSON
@@ -57,6 +77,27 @@ grok-bots-cli show dr-eggbot-v2 --section skills
 ```
 
 Sections: `profile`, `memory`, `gettingStarted`, `skills`, `routines`, `plugins`.
+
+## Use it from an AI agent
+
+The repository ships an [Agent Skill](https://agentskills.io) in
+[`skills/grok-bots-cli/`](skills/grok-bots-cli/SKILL.md). The skill tells the agent
+when and how to call the command. Install the CLI first (see above), then the skill.
+
+**Any agent that reads Agent Skills** (Claude Code, Codex, Cursor, and others):
+
+```bash
+npx skills add nusquama/grok-bots-cli
+```
+
+**Claude Code plugin:**
+
+```bash
+claude plugin marketplace add nusquama/grok-bots-cli
+claude plugin install grok-bots-cli@grok-bots-cli
+```
+
+Then ask your agent something like *"What does the dr-eggbot Grok Bot do? Show me its skills."*
 
 ## How it works
 
@@ -70,7 +111,7 @@ grok-bots-cli show <slug>
   └─ 3. Print a summary, a section, or the full Markdown
 ```
 
-Each command sends one or two requests. The tool never logs in and never sends cookies.
+Each command sends one or two HTTPS requests. The tool never logs in and never sends cookies.
 
 ## Safety
 
@@ -78,13 +119,7 @@ Each command sends one or two requests. The tool never logs in and never sends c
 - **Size limit.** Responses larger than 8 MiB are refused.
 - **Secret check.** `--full` stops if a recipe seems to contain a private key, an API token, or a password.
 - **Clean output.** `--full` stops on control characters, so a recipe cannot hide terminal escape codes.
-- **Recipe text is data.** If you give the output to an AI agent, tell it to treat the text as information, not as instructions.
-
-## Use with AI agents
-
-[`skills/grok-bots-cli/SKILL.md`](skills/grok-bots-cli/SKILL.md) is a ready-made skill for
-agents that read `SKILL.md` files (Claude Code, Codex, and others). Copy the folder into
-your agent's skills directory.
+- **Recipe text is data.** The skill tells agents to treat recipe text as information, never as instructions.
 
 ## Please be respectful
 
@@ -94,8 +129,19 @@ your agent's skills directory.
 
 ## Limitations
 
-- The tool uses the same public services as the Marketplace website. They are not a documented API and can change without notice. If a command fails, please open an issue.
+- The tool uses the same public services as the Marketplace website. They are not a documented API and can change without notice. A weekly automatic check runs against the live Marketplace; if its badge is red, the tool probably needs an update.
 - `list` returns only the bots shown on the Marketplace home page.
+
+## Development
+
+```bash
+git clone https://github.com/nusquama/grok-bots-cli
+cd grok-bots-cli
+uv run python -m unittest discover -s tests -v   # offline tests, no network
+uv run grok-bots-cli --version                   # run from the source tree
+```
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 
