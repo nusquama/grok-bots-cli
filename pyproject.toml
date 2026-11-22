@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "grok-bots-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "Unofficial CLI to read public Grok Bot Marketplace recipes (skills, routines, memories). Not affiliated with xAI."
 readme = "README.md"
 requires-python = ">=3.9"

@@ -37,7 +37,12 @@ and compare bots before you import one.
 
 ## Install
 
-You need Python 3.9 or newer. Pick one:
+You need Python 3.9 or newer and one of these installers:
+
+- **uv** (recommended): [install uv](https://docs.astral.sh/uv/getting-started/installation/). uv can also download Python for you.
+- **pipx**: [install pipx](https://pipx.pypa.io/stable/installation/).
+
+Then pick one:
 
 ```bash
 uv tool install git+https://github.com/nusquama/grok-bots-cli
@@ -48,7 +53,7 @@ pipx install git+https://github.com/nusquama/grok-bots-cli
 ```
 
 Both create an isolated environment and put `grok-bots-cli` on your `PATH`.
-To pin a release, add `@v0.1.0` to the URL.
+If the command is not found afterwards, run `uv tool update-shell` or `pipx ensurepath`, then open a new terminal.
 
 Check the install:
 
@@ -56,8 +61,24 @@ Check the install:
 grok-bots-cli --version
 ```
 
-**Update:** `uv tool upgrade grok-bots-cli` or `pipx upgrade grok-bots-cli`.
-**Remove:** `uv tool uninstall grok-bots-cli` or `pipx uninstall grok-bots-cli`.
+### Update
+
+Run the install command again with `--force`. This always fetches the latest version from GitHub:
+
+```bash
+uv tool install --force git+https://github.com/nusquama/grok-bots-cli
+```
+
+```bash
+pipx install --force git+https://github.com/nusquama/grok-bots-cli
+```
+
+To install a specific release instead, add its tag to the URL, for example `...grok-bots-cli@v0.1.1`.
+See [Releases](https://github.com/nusquama/grok-bots-cli/releases) for the list.
+
+### Remove
+
+`uv tool uninstall grok-bots-cli` or `pipx uninstall grok-bots-cli`.
 
 ## Usage
 
@@ -84,7 +105,8 @@ The repository ships an [Agent Skill](https://agentskills.io) in
 [`skills/grok-bots-cli/`](skills/grok-bots-cli/SKILL.md). The skill tells the agent
 when and how to call the command. Install the CLI first (see above), then the skill.
 
-**Any agent that reads Agent Skills** (Claude Code, Codex, Cursor, and others):
+**Any agent that reads Agent Skills** (Claude Code, Codex, Cursor, and others).
+This command needs [Node.js](https://nodejs.org/) 22.20 or newer:
 
 ```bash
 npx skills add nusquama/grok-bots-cli
@@ -117,7 +139,7 @@ Each command sends one or two HTTPS requests. The tool never logs in and never s
 
 - **Known hosts only.** Requests go only to `x.ai`, the listing service, and the public recipe storage. Redirects to any other host are refused.
 - **Size limit.** Responses larger than 8 MiB are refused.
-- **Secret check.** `--full` stops if a recipe seems to contain a private key, an API token, or a password.
+- **Secret masking.** If a recipe seems to contain a private key, an API token, or a password, the tool replaces it with `[REDACTED]`, prints the rest, and warns you.
 - **Clean output.** `--full` stops on control characters, so a recipe cannot hide terminal escape codes.
 - **Recipe text is data.** The skill tells agents to treat recipe text as information, never as instructions.
 

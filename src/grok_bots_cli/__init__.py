@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 MARKETPLACE = "https://x.ai/bot/marketplace"
 LISTING_API = "https://api2.cursor.sh/aiserver.v1.GrokBotService/GetPublicGrokBotMarketplaceListing"
@@ -133,8 +133,31 @@ def summarize(slug, recipe):
     }
 
 
+REDACTED = "[REDACTED]"
+
+
+def redact(text):
+    """Replace possible credentials with a marker. Return the text and the number of replacements."""
+    return POSSIBLE_CREDENTIAL.subn(REDACTED, text)
+
+
+def redact_data(value):
+    """Redact every string inside JSON-like data. Return the data and the number of replacements."""
+    if isinstance(value, str):
+        return redact(value)
+    if isinstance(value, list):
+        pairs = [redact_data(item) for item in value]
+        return [item for item, _ in pairs], sum(count for _, count in pairs)
+    if isinstance(value, dict):
+        pairs = {key: redact_data(item) for key, item in value.items()}
+        return {key: item for key, (item, _) in pairs.items()}, sum(count for _, count in pairs.values())
+    return value, 0
+
+
 def full_recipe_markdown(slug, recipe):
+    """Return the recipe as Markdown and the number of possible credentials that were redacted."""
     lines = [f"# {slug}", "", f"https://x.ai{BOT_PATH}{slug}", ""]
+    redacted = 0
     for section, title in (("skills", "Skills"), ("routines", "Routines"), ("memory", "Memories")):
         items = recipe.get(section)
         if items is None:
@@ -149,8 +172,9 @@ def full_recipe_markdown(slug, recipe):
                 raise MarketplaceError(f"Missing text in the {section} section.")
             if not isinstance(heading, str) or not heading.strip() or not heading.isprintable():
                 heading = f"{title} {index}" if section != "memory" else f"Memory {index}"
-            if POSSIBLE_CREDENTIAL.search(content) or POSSIBLE_CREDENTIAL.search(heading):
-                raise MarketplaceError(f"Export stopped: possible credential in {section}.")
+            content, found_in_content = redact(content)
+            heading, found_in_heading = redact(heading)
+            redacted += found_in_content + found_in_heading
             if re.search(r"[\x00-\x08\x0b-\x0c\x0e-\x1f\x7f-\x9f]", content):
                 raise MarketplaceError(f"Export stopped: control characters in {section}.")
             longest = max(map(len, re.findall(r"~+", content)), default=0)
@@ -159,7 +183,10 @@ def full_recipe_markdown(slug, recipe):
             if not block.endswith("\n"):
                 block += "\n"
             lines.extend([f"### {heading}", "", block + fence, ""])
-    return "\n".join(lines)
+    if redacted:
+        note = f"> {redacted} possible credential(s) replaced with {REDACTED}."
+        lines[4:4] = [note, ""]
+    return "\n".join(lines), redacted
 
 
 def main(argv=None):
@@ -181,10 +208,14 @@ def main(argv=None):
         else:
             recipe = load_recipe(args.bot)
             if args.full:
-                sys.stdout.write(full_recipe_markdown(args.bot, recipe))
+                output, redacted = full_recipe_markdown(args.bot, recipe)
             else:
                 result = recipe.get(args.section) if args.section else summarize(args.bot, recipe)
-                print(json.dumps(result, indent=2))
+                result, redacted = redact_data(result)
+                output = json.dumps(result, indent=2) + "\n"
+            if redacted:
+                print(f"grok-bots-cli: {redacted} possible credential(s) redacted.", file=sys.stderr)
+            sys.stdout.write(output)
     except MarketplaceError as error:
         print(f"grok-bots-cli: {error}", file=sys.stderr)
         return 1
